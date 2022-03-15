@@ -1,0 +1,61 @@
+prometheus:
+  enabled: true
+  
+  ## @param prometheus.replicaCount - Number of Prometheus replicas desired
+  replicaCount: 2
+
+  ## @param prometheus.resources CPU/Memory resource requests/limits for node
+  ## ref: https://kubernetes.io/docs/user-guide/compute-resources/
+  resources:
+    requests:
+      cpu: 512m
+      memory: 1536Mi
+    limits:
+      cpu: 512m
+      memory: 2048Mi
+
+  ## @param prometheus.retention Metrics retention days  
+  retention: 12h
+
+  ## @param prometheus.retentionSize Maximum size of metrics  
+  retentionSize: 8GB
+
+  ## @param prometheus.disableCompaction Disable the compaction of the Prometheus TSDB
+  ## See https://github.com/prometheus-operator/prometheus-operator/blob/master/Documentation/api.md#prometheusspec
+  ## ref: https://prometheus.io/docs/prometheus/latest/storage/#compaction
+  disableCompaction: true
+
+  ## Prometheus persistence parameters
+  persistence:
+    enabled: true
+    storageClass: "prometheus-storage-class"
+    accessModes:
+      - ReadWriteOnce
+    size: 32Gi
+
+  ## Thanos sidecar container configuration
+  thanos:
+    create: true
+
+    ## @param prometheus.thanos.objectStorageConfig Support mounting a Secret for the objectStorageConfig of the sideCar container.
+    ## ref: https://github.com/prometheus-operator/prometheus-operator/blob/master/Documentation/thanos.md
+    objectStorageConfig:
+      secretName: thanos-objstore-config
+      secretKey: thanos.yaml
+
+    ## Thanos sidecar container resource requests and limits.
+    resources:
+      requests:
+        cpu: 256m
+        memory: 256Mi
+      limits:
+        cpu: 512m
+        memory: 512Mi
+
+    ## Thanos Sidecar Service
+    service:
+      type: LoadBalancer
+      port: 10901
+      clusterIP: None
+      annotations:
+        service.beta.kubernetes.io/aws-load-balancer-internal: "true"
